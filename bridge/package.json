@@ -1,0 +1,38 @@
+{
+  "name": "bridge",
+  "version": "0.0.1",
+  "description": "PolicyPal Network Bridge Implementation",
+  "main": "index.js",
+  "scripts": {
+    "start": "clear && babel-node --presets env scripts/index.js",
+    "setup": "babel-node --presets env scripts/testing/setup.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --debug"
+  },
+  "keywords": [
+    "policypal",
+    "network",
+    "bridge"
+  ],
+  "author": "PolicyPal Network",
+  "license": "ISC",
+  "dependencies": {
+    "enum": "^2.5.0",
+    "fs": "0.0.1-security",
+    "keythereum": "^1.0.4",
+    "lodash": "^4.17.5",
+    "npm": "^6.0.0",
+    "web3": "^1.0.0-beta.34",
+    "zero-fill": "^2.2.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.2.3",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0"
+  }
+}

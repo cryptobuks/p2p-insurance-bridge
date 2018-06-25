@@ -1,0 +1,5 @@
+# Scripts Related
+bridge/node_modules
+
+# Outputs
+bridge/output/*

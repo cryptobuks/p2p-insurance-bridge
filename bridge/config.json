@@ -1,0 +1,59 @@
+{
+  "env": "development",
+  "constants": {
+    "defaultTimeoutMs": 5000,
+    "defaultPollIntervalMs": 2000,
+    "defaultGas": 4000000,
+    "defaultGasPrice": 1000000000,
+    "lastHomeBlock": 0,
+    "lastForeignBlock": 0,
+    "cappedTxsPerBlock": 30
+  },
+  "network": {
+    "development": {
+      "home": "http://localhost:8545",
+      "foreign": "http://localhost:8545"
+    },
+    "staging": {
+      "home": "http://localhost:8545",
+      "foreign": "http://localhost:8545"
+    }
+  },
+  "authority": {
+    "development": {
+      "address": "0x0"
+    },
+    "staging": {
+      "address": "0x0"
+    },
+    "passwordFile": "./input/keystore/password.txt",
+    "keystoreFolder": "./input/"
+  },
+  "token": {
+    "abi": "./input/tokencontract.abi.json",
+    "development": {
+      "address": "0x0"
+    },
+    "staging": {
+      "address": "0x0"
+    }
+  },
+  "custodian": {
+    "abi": "./input/custodian.abi.json",
+    "development": {
+      "address": "0x0"
+    },
+    "staging": {
+      "address": "0x0"
+    }
+  },
+  "pool": {
+    "abi": "./input/poolcontract.abi.json",
+    "development": {
+      "address": "0x0"
+    },
+    "staging": {
+      "address": "0x0"
+    }
+  }
+}
