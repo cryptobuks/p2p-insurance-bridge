@@ -1,9 +1,9 @@
 /*
 deposit_check_relay.js
 ===================
-listens to Approval event for Custodian
-triggers CheckTransaction in Pool Contract for address verification
-triggers MakeTransaction in Custodian to initiate transfer
+Listens to token Approval event for Custodian
+Triggers CheckTransaction in Pool Contract to verify payment
+Triggers MakeTransaction in Custodian to initiate transfer from user wallet to contract
 */
 
 import _ from 'lodash';

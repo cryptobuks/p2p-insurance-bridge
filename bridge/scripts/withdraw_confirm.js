@@ -1,9 +1,9 @@
 /*
 withdraw_confirm.js
 ===================
-listens to ClaimApproved event in Pool Contract
-create byte message and sign it with private key
-triggers submitSignature in Pool Contract to approve transaction
+Listens to ClaimApproved event in Pool Contract
+Create byte message and sign it with private key
+Triggers submitSignature in Pool Contract to approve transaction
 */
 
 import {

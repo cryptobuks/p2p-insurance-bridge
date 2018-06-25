@@ -1,8 +1,8 @@
 /*
 withdraw_relay.js 
 ===================
-listens to CollectedSignatures event in Pool Contract
-assigned authoirty recevies collected signatures and submit all to Custodian with ClaimPayout
+Listens to CollectedSignatures event in Pool Contract
+Assigned authoirty recevies collected signatures and submit all to Custodian with ClaimPayout
 Custodian verifies signatures and initate claim payout 
 */
 
@@ -101,9 +101,10 @@ export default class WithdrawRelay extends BaseRelay {
             return null;
           }
 
-          // Get requiredSignatures dynamically
+          // get requiredSignatures dynamically
           const requiredSignatures = await this.foreign.contract.methods.requiredSignatures().call();
 
+          // collect message and all signatures
           this.logWithState('Responsible for relay, proceeding');
           const message = await this.foreign.contract.methods.message(messageHash).call();
           const sigRequests = [];

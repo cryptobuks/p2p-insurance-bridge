@@ -1,8 +1,8 @@
 /*
 deposit_relay.js
 ===================
-listens to Transfer event from Token to Custodian
-triggers MakeTransaction in Pool Contract for policy inception
+Listens to Transfer event from Token to Custodian
+Triggers MakeTransaction in Pool Contract for policy inception
 */
 
 import {
