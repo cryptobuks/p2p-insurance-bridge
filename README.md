@@ -1,6 +1,6 @@
 # PolicyPal Network P2P Insurance POC
 
-**Disclaimer:** This code is not ready for Production. We are still constantly improving on the code as it undergoes various tests for security, edge cases, and bugs.
+**Disclaimer:** This code is not ready for Production. We are still constantly improving on the code as it undergoes various tests for security, edge cases, and bugs. The current Proof-of-Concept can be tested [here](https://www.policypal.network/poc/p2pinsurance).
 
 ## Description
 The bridge is a modified version of [Parity Bridge](https://github.com/paritytech/parity-bridge), re-written from RUST to Javascript and modified for the POC's requirements. 
@@ -8,11 +8,11 @@ Bridges are communication layers between a Main and Private Net, constantly "lis
 
 When a payment or claims transaction is made, all bridges will pick up the event and check its validity with the Private Net’s record. Valid transactions will be signed by the bridge authorities and recorded in the Smart Contract.
 
-Only when a required signature count is met, the transaction data will be synced between the two chains, triggering the policy or the claim payout. In our current Proof-of-Concept, Private Net is running on Proof of Authority (PoA) to increase information privacy, lower transaction fees and faster block times. At the moment, 2 signatures are required for claim payout approval with 3 running authority bridges.
+Only when a required signature count is met, the transaction data will be synced between the two chains, triggering the policy or the claim payout. In our current [Proof-of-Concept](https://www.policypal.network/poc/p2pinsurance), Private Net is running on Proof of Authority (PoA) to increase information privacy, lower transaction fees and faster block times. At the moment, 2 signatures are required for claim payout approval with 3 running authority bridges.
 
 This concept can be applied directly to power our P2P insurance. We are developing a generalised version of our bridge to extend to blockchains other than Ethereum. This enables inter-chain communication between PolicyPal Network and other chains for partnerships and non-PAL payouts.
 
-Users pay only the cost (gas fee) for policy payments and claiming. Authorities will bare all other required fees.
+In this POC, whitelisting and claims are auto-approved. Users pay only the cost (gas fee) for policy payments and claiming, authorities will bare all other required fees.
 
 ### Signing of Transactions
 ![alt Claim Approval with Authorities](https://cdn-images-1.medium.com/max/1400/1*Q0Xe1gO7A1xOSLDh_VRMiw.png)
@@ -73,9 +73,10 @@ npm start
 ```
 and it will begin listening for events from the *token contracts*.
 
-## Common Issues
+## Known Issues
 * `Error: Invalid JSON RPC response: ""`: Private net might not be running/Duplicate transactions done.
 * `Returned error: replacement transaction underpriced`: Tried to overwrite pending transactions as the script is unable to get the correct nonce if there are pending transactions.
 
-## Improvements/To-do
+## To-do
+* Fix nonce issue in transactions.
 * Signing for deposit events.
