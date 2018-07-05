@@ -47,23 +47,48 @@ export default class WithdrawRelay extends BaseRelay {
         super.updateRelayState(
           WAIT_STATE,
           'home',
-          (event) => {
+          async (event) => {
             const { transactionHash } = event;
             const signResult = this.lastCheckAndSignedResults[transactionHash];
 
             if (signResult.responsible) {
-              return {
-                from: this.authorityAddress,
-                to: this.home.contractAddress,
-                gas: constants.defaultGas,
-                gasPrice: constants.defaultGasPrice * 10,
-                data: this.home.contract.methods.ClaimPayout(
-                  signResult.vs,
-                  signResult.rs,
-                  signResult.ss,
-                  signResult.message,
-                ).encodeABI(),
+              const promisifiedGasEstimation = () => {
+                return new Promise(async (resolve) => {
+                  try {
+                    const gasAmount = await this.home.contract.methods
+                      .ClaimPayout(
+                        signResult.vs,
+                        signResult.rs,
+                        signResult.ss,
+                        signResult.message,
+                      )
+                      .estimateGas({
+                        from: this.authorityAddress,
+                        to: this.home.contractAddress,
+                      });
+
+                    if (gasAmount) {
+                      resolve({
+                        from: this.authorityAddress,
+                        to: this.home.contractAddress,
+                        gas: gasAmount,
+                        gasPrice: constants.defaultGasPrice * 10,
+                        data: this.home.contract.methods.ClaimPayout(
+                          signResult.vs,
+                          signResult.rs,
+                          signResult.ss,
+                          signResult.message,
+                        ).encodeABI(),
+                      });
+                    }
+                  } catch(e) {
+                    this.logErrorWithState(`Dropped event ${event.transactionHash} [Gas estimation failed]`);
+                    resolve(null);
+                  }
+                });
               };
+              const tx = await promisifiedGasEstimation();
+              return tx;
             }
             
             return null;

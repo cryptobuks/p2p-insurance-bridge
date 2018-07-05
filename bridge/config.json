@@ -1,5 +1,6 @@
 {
   "env": "development",
+  "level": "master",
   "constants": {
     "defaultTimeoutMs": 5000,
     "defaultPollIntervalMs": 2000,

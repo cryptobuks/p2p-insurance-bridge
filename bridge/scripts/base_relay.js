@@ -116,7 +116,7 @@ export default class BaseRelay {
     }
   }
 
-  updateRelayState(
+  async updateRelayState(
     nextState,
     dest,
     relayTxCreatorFunc,
@@ -129,45 +129,69 @@ export default class BaseRelay {
       this.logWithState(`Processing ${eventsToBeProcessed.length} events...`);
       this.logWithState(`Unprocessed ${this.unprocessedEventsQueue.length} left...`);
 
+      let currNonce = await this.web3[dest].eth.getTransactionCount(this.authorityAddress);
       const relayTxs = _.compact(_.map(
         eventsToBeProcessed,
-        (event, idx) => this.signAndSendTransactionPromise(
-          dest,
-          relayTxCreatorFunc(event),
-          eventsToBeProcessed[idx],
-        ),
+        async (event, idx) => {
+          let tx = await relayTxCreatorFunc(event);
+          if (tx) {
+            tx.nonce = currNonce;
+            currNonce += 1;
+          }
+          return this.signAndSendTransactionPromise(
+            dest,
+            tx,
+            eventsToBeProcessed[idx],
+          );
+        }
       ));
 
       if (relayTxs && relayTxs.length > 0) {
         Promise.all(relayTxs)
           .then((resultPayloads) => {
-            let failCounter = 0;
             this.logWithState('----------------- Relay Batch Result -----------------');
+            let failCounter = 0;
+
             _.forEach(resultPayloads, (resultPayload) => {
-              if (resultPayload.error) {
+              if (resultPayload) {
                 const { eventObj, error } = resultPayload;
-                const {
-                  transactionHash,
-                  blockNumber,
-                } = eventObj;
+                const { blockNumber, transactionHash } = eventObj;
+                if (error) {
+                  if (dest === 'foreign') {
+                    failCounter += 1;
 
-                if (!this.failedEvents[transactionHash]) {
-                  this.failedEvents[transactionHash] = { eventObj, failedCount: 0 };
+                    let failedCount = this.failedEvents[transactionHash];
+                    if (failedCount === undefined || failedCount < 8) {
+                      if (!this.failedEvents[transactionHash]) {
+                        failedCount = 1;
+                      } else {
+                        failedCount += 1;
+                      }
+                      this.failedEvents[transactionHash] = failedCount;
+                      this.logErrorWithState(`❌ Event Tx Hash: ${transactionHash} (${blockNumber}) [RT: ${failedCount}/8]`);
+                      this.logErrorWithState(error);
+
+                      // push transaction to back of queue
+                      // most likely its a nounce issue
+                      this.unprocessedEventsQueue.push(eventObj);
+                    } else {
+                      delete this.failedEvents[transactionHash];
+                      this.logErrorWithState(`❌ Event Tx Hash: ${transactionHash} (${blockNumber})`);
+                      this.logErrorWithState(`Dropped event ${transactionHash} [Retry too many times]`);
+                      failCounter += 1;
+                    }
+                  } else {
+                    this.logErrorWithState(`Dropped event ${transactionHash} [To Mainnet]`);
+                    failCounter += 1;
+                  }
+                } else {
+                  this.logWithState(`✅ Tx Hash: ${transactionHash}`);
                 }
-
-                this.failedEvents[transactionHash].failedCount += 1;
-                // only retry once
-                if (this.failedEvents[transactionHash].failedCount < 1 /* 2 */) {
-                  this.unprocessedEventsQueue.unshift(eventObj);
-                }
-
-                this.logErrorWithState(`❌ Event Tx Hash: ${transactionHash} (${blockNumber})`);
-                this.logErrorWithState(error);
-                failCounter += 1;
               } else {
-                this.logWithState(`✅ Tx Hash: ${resultPayload.result.transactionHash}`);
+                failCounter += 1;
               }
             });
+
             this.logWithState(`Total Tx(s): ${resultPayloads.length} (Failed: ${failCounter})`);
             this.logWithState('--------------------------------------');
             // Done processing all relay to home promises back to wait state

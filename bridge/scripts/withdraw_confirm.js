@@ -43,7 +43,7 @@ export default class WithdrawConfirm extends BaseRelay {
         super.updateRelayState(
           WAIT_STATE,
           'foreign',
-          (event) => {
+          async (event) => {
             const {
               returnValues: {
                 _policyAddr,
@@ -53,29 +53,52 @@ export default class WithdrawConfirm extends BaseRelay {
               transactionHash,
             } = event;
 
-            // construct message
             const message = toByteMessage(
               _policyAddr,
               _beneficiaryAddr,
               _payoutAmount,
               transactionHash,
             );
-
-            // generate signature with message and key
+            console.log(message, message.length);
             const signResult = this.web3.foreign.eth.accounts.sign(
               message,
               this.authorityPrivateKey,
             );
-            return {
-              from: this.authorityAddress,
-              to: this.foreign.contractAddress,
-              gas: constants.defaultGas,
-              gas_price: constants.defaultGasPrice,
-              data: this.foreign.contract.methods.submitSignature(
-                signResult.signature,
-                signResult.message,
-              ).encodeABI(),
+
+            const promisifiedGasEstimation = () => {
+              return new Promise(async (resolve) => {
+                try {
+                  const gasAmount = await this.foreign.contract.methods
+                    .submitSignature(
+                      signResult.signature,
+                      signResult.message,
+                    )
+                    .estimateGas({
+                      from: this.authorityAddress,
+                      to: this.foreign.contractAddress,
+                    });
+
+                  if (gasAmount) {
+                    resolve({
+                      from: this.authorityAddress,
+                      to: this.foreign.contractAddress,
+                      gas: gasAmount,
+                      gas_price: constants.defaultGasPrice,
+                      data: this.foreign.contract.methods.submitSignature(
+                        signResult.signature,
+                        signResult.message,
+                      ).encodeABI(),
+                    });
+                  }
+                } catch(e) {
+                  this.logErrorWithState(`Dropped event ${event.transactionHash} [Gas estimation failed]`);
+                  resolve(null);
+                }
+              });
             };
+
+            const tx = await promisifiedGasEstimation();
+            return tx;
           },
         );
         break;
